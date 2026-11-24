@@ -8,6 +8,11 @@ tun_name = "anet-client"
 # Включает ручное управление роутингом на клиенте
 manual_routing = false
 
+# Disable RX watchdog for dedicated inter-server tunnels if required.
+# Explicit transport failures still trigger reconnect. Default: true.
+health_check_enabled = true
+# For manual routing without system DNS changes, set dns_server_list = [] below.
+
 # Windows per-app split tunneling.
 # include-режим: в туннель идут ТОЛЬКО эти процессы.
 # per_app = ["firefox.exe", "telegram.exe"]
