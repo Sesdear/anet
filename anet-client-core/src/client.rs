@@ -1318,6 +1318,10 @@ impl AnetClient {
         let tx_probe_health = tx_probe.clone();
 
         let health_pause = result.health_pause.clone();
+        let health_check_enabled = config_clone.main.health_check_enabled;
+        if !health_check_enabled {
+            info!("[Health] RX watchdog disabled; transport closure recovery remains enabled.");
+        }
         let health_task = spawn(async move {
             let check_interval = Duration::from_secs(3);
             let has_probes = client_ip_opt.is_some() && gateway_ip_opt.is_some();
@@ -1363,6 +1367,10 @@ impl AnetClient {
                         monitor_reconnect.notify_one();
                         break;
                     }
+                }
+
+                if !health_check_enabled {
+                    continue;
                 }
 
                 // 1. Детектор выхода из глубокого сна ОС (Suspend-to-RAM / Android Doze Mode).
