@@ -25,6 +25,11 @@ pub struct MainConfig {
     #[serde(default)]
     pub manual_routing: bool,
 
+    /// Reconnect when tunnel payload/probes stop receiving replies.
+    /// Explicit transport closure still triggers recovery when disabled.
+    #[serde(default = "default_health_check_enabled")]
+    pub health_check_enabled: bool,
+
     #[serde(default)]
     pub route_for: Vec<String>,
 
@@ -60,6 +65,10 @@ pub struct MainConfig {
     /// Альтернативное имя поля для совместимости с подписками
     #[serde(default)]
     pub subscription_url: Option<String>,
+}
+
+fn default_health_check_enabled() -> bool {
+    true
 }
 
 fn default_dns_server_list() -> Vec<String> {
@@ -105,6 +114,7 @@ impl Default for MainConfig {
             exclude_route_for: vec![],
             dns_server_list: default_dns_server_list(),
             manual_routing: false,
+            health_check_enabled: true,
             per_app: vec![],
             per_app_mode: PerAppMode::All,
             per_app_exclude: None,
@@ -1134,6 +1144,17 @@ impl CoreConfig {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn rx_watchdog_defaults_to_enabled_and_can_be_disabled() {
+        assert!(super::MainConfig::default().health_check_enabled);
+        let default: super::MainConfig = toml::from_str("tun_name = \"anet-client\"").unwrap();
+        assert!(default.health_check_enabled);
+        let disabled: super::MainConfig = toml::from_str(
+            "tun_name = \"anet-client\"\nhealth_check_enabled = false",
+        ).unwrap();
+        assert!(!disabled.health_check_enabled);
+    }
+
     use super::{ServerConfig, TransportMode};
     use serde::Deserialize;
 
